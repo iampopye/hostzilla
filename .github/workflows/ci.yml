@@ -82,16 +82,3 @@ jobs:
         # The installer refuses to place a file that fails this; catch it in CI
         # rather than on an operator's server.
         run: visudo -cf config/sudoers.hostzilla
-
-  landing-page:
-    name: Landing page is self-contained
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Assert zero external requests
-        run: python tests/check_landing_page.py

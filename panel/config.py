@@ -48,7 +48,7 @@ def _strip_value(raw):
 def _parse_conf_file(path):
     values = {}
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             for line in fh:
                 line = line.rstrip("\n")
                 if not line.strip() or line.lstrip().startswith("#"):

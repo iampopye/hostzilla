@@ -69,7 +69,7 @@ def _dev_secret_key():
     path = _dev_secret_key_path()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             existing = fh.read().strip()
         if existing:
             return existing
