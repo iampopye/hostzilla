@@ -6,13 +6,14 @@ Tables:
        created_at, finished_at)
 
 DB location resolution order:
-  1. explicit db_path argument
+  1. explicit set_db_path()
   2. DB_PATH from /etc/hostzilla/hostzilla.conf
   3. HZ_DB_PATH env var
   4. dev fallback: <panel>/data/hostzilla.db
 """
 
 import os
+import secrets
 import sqlite3
 import threading
 from contextlib import contextmanager
@@ -23,6 +24,19 @@ from config import get_config
 
 _LOCK = threading.Lock()
 _DB_PATH = None
+
+# A single provisioning log can be large (a WordPress core download, certbot
+# output). Cap what we persist so one runaway job cannot bloat the panel DB.
+MAX_LOG_BYTES = 256 * 1024
+
+# Columns update_job() may write. The UPDATE statement has to interpolate column
+# names because SQL cannot parameterise them, so the permitted names must come
+# from this constant and never from a caller-supplied string.
+_UPDATABLE_JOB_COLUMNS = frozenset(
+    {"type", "domain", "params_json", "status", "result_json", "log", "finished_at"}
+)
+
+ACTIVE_STATUSES = ("queued", "running")
 
 
 def _default_dev_path():
@@ -95,6 +109,13 @@ CREATE TABLE IF NOT EXISTS jobs (
 CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
 CREATE INDEX IF NOT EXISTS idx_jobs_domain ON jobs(domain);
 CREATE INDEX IF NOT EXISTS idx_jobs_created ON jobs(created_at DESC);
+
+-- Dedup is enforced by the DATABASE, not only by an in-process lock. gunicorn
+-- runs four workers, each with its own lock, so two simultaneous requests
+-- handled by different workers could otherwise both queue a create for the
+-- same domain and race each other through the provisioning steps.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_active_unique
+    ON jobs(type, domain) WHERE status IN ('queued','running');
 """
 
 
@@ -140,6 +161,16 @@ def count_users():
         return conn.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"]
 
 
+def set_password(user_id, new_password):
+    """Replace a user's password hash. Returns True when a row was updated."""
+    pw_hash = generate_password_hash(new_password)
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE users SET password_hash = ? WHERE id = ?", (pw_hash, user_id)
+        )
+        return cur.rowcount > 0
+
+
 def verify_user(username, password):
     """Return the user dict on success, else None."""
     user = get_user_by_username(username)
@@ -150,17 +181,35 @@ def verify_user(username, password):
     return None
 
 
-def ensure_default_admin():
-    """Create an admin/admin user if no users exist (dev convenience)."""
-    if count_users() == 0:
-        create_user("admin", "admin", role="admin")
-        return True
-    return False
+def bootstrap_admin(username="admin"):
+    """Create the first admin with a RANDOM password. Returns (user, password).
+
+    Returns None when any user already exists.
+
+    This deliberately has no well-known fallback password. The previous
+    ensure_default_admin() created admin/admin whenever the users table was
+    empty, and the panel called it on every startup — so any install whose
+    installer bootstrap step had failed came up with default credentials on a
+    box that is, by design, reachable from the internet.
+    """
+    if count_users() != 0:
+        return None
+    password = secrets.token_urlsafe(18)
+    create_user(username, password, role="admin")
+    return username, password
 
 
 # ---------------------------------------------------------------------------
 # Jobs
 # ---------------------------------------------------------------------------
+def _truncate_log(text):
+    if text is None:
+        return None
+    if len(text) <= MAX_LOG_BYTES:
+        return text
+    return text[:MAX_LOG_BYTES] + "\n... [truncated by Hostzilla panel]"
+
+
 def create_job(job_type, domain, params_json=None, status="queued"):
     with get_conn() as conn:
         cur = conn.execute(
@@ -174,6 +223,11 @@ def create_job(job_type, domain, params_json=None, status="queued"):
 def update_job(job_id, **fields):
     if not fields:
         return
+    unknown = set(fields) - _UPDATABLE_JOB_COLUMNS
+    if unknown:
+        raise ValueError("not an updatable job column: {}".format(sorted(unknown)))
+    if "log" in fields:
+        fields["log"] = _truncate_log(fields["log"])
     cols = ", ".join("{} = ?".format(k) for k in fields)
     vals = list(fields.values()) + [job_id]
     with get_conn() as conn:
@@ -207,6 +261,25 @@ def find_active_job(job_type, domain):
             (job_type, domain),
         ).fetchone()
         return dict(row) if row else None
+
+
+def reap_stale_jobs():
+    """Fail jobs left queued/running by a previous process. Returns the count.
+
+    The worker pool lives inside the panel process, so a restart, crash or
+    redeploy abandons whatever it was running. Those rows previously stayed
+    'running' forever, which also permanently blocked the dedup check from ever
+    queueing that (type, domain) pair again.
+    """
+    with get_conn() as conn:
+        cur = conn.execute(
+            "UPDATE jobs SET status = 'error', "
+            "result_json = COALESCE(result_json, "
+            "'{\"status\":\"error\",\"message\":\"interrupted by panel restart\"}'), "
+            "finished_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') "
+            "WHERE status IN ('queued','running')"
+        )
+        return cur.rowcount
 
 
 def job_counts():

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Account</h1>
+</div>
+
+<div class="card form-card">
+  <div class="card-head">
+    <h2>Change password</h2>
+  </div>
+  <p class="muted">
+    Signed in as <span class="mono">{{ current_user.username }}</span>.
+    The installer generates a random password on first run — change it here.
+  </p>
+
+  <form method="post" action="{{ url_for('account') }}" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>
+      <span>Current password</span>
+      <input type="password" name="current_password"
+             autocomplete="current-password" required>
+    </label>
+    <label>
+      <span>New password</span>
+      <input type="password" name="new_password" minlength="12"
+             autocomplete="new-password" required>
+      <small class="muted">At least 12 characters.</small>
+    </label>
+    <label>
+      <span>Confirm new password</span>
+      <input type="password" name="confirm_password" minlength="12"
+             autocomplete="new-password" required>
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Update password</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

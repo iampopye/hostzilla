@@ -21,7 +21,8 @@
       <a href="{{ url_for('jobs_list') }}" class="{{ 'active' if request.endpoint in ['jobs_list','job_detail'] }}">Jobs</a>
     </nav>
     <form class="logout-form" method="post" action="{{ url_for('logout') }}">
-      <span class="user-chip">{{ current_user.username }}</span>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <a class="user-chip" href="{{ url_for('account') }}">{{ current_user.username }}</a>
       <button type="submit" class="btn btn-ghost">Logout</button>
     </form>
   </div>
