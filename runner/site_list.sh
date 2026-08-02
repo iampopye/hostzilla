@@ -6,20 +6,11 @@
 # site_create wrote. ssl is true when an -le-ssl Apache vhost OR a live cert exists.
 # Never mutates anything; safe to call synchronously from the panel.
 HZ_VERB=site_list
-source /opt/hostzilla/runner/_lib.sh
+# shellcheck source=runner/_lib.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/_lib.sh"
 require_root
 
-# JSON string escaper for manifest-sourced values (defense in depth; domains are
-# already regex-validated at create time, but type/docroot/created are echoed raw).
-json_escape() {
-  local s="${1:-}"
-  s="${s//\\/\\\\}"   # backslash
-  s="${s//\"/\\\"}"   # double-quote
-  s="${s//$'\t'/\\t}" # tab
-  s="${s//$'\n'/\\n}" # newline
-  s="${s//$'\r'/\\r}" # carriage return
-  printf '%s' "$s"
-}
+# json_escape() lives in _lib.sh so every verb escapes output identically.
 
 # Does this domain have SSL? An -le-ssl vhost (certbot --apache) or a live cert dir.
 has_ssl() {
@@ -34,12 +25,15 @@ log "listing sites"
 sep=""
 sites_json=""
 if [[ -d "$HZ_SITES" ]]; then
-  # stable, predictable ordering
+  # Glob straight into a sorted array. The previous `for man in $(printf ... | sort)`
+  # split on IFS, so any manifest whose name contained whitespace was silently
+  # torn into fragments.
   shopt -s nullglob
-  for man in $(printf '%s\n' "$HZ_SITES"/*.env | sort); do
+  mapfile -t manifests < <(printf '%s\n' "$HZ_SITES"/*.env | LC_ALL=C sort)
+  shopt -u nullglob
+  for man in "${manifests[@]}"; do
     [[ -f "$man" ]] || continue
     # Read manifest values in a SUBSHELL so a malformed .env can't poison our env.
-    # Each verb prints "key<TAB>value"; we capture the four fields we expose.
     fields="$(
       # shellcheck disable=SC1090
       ( set +euo pipefail
@@ -61,8 +55,7 @@ if [[ -d "$HZ_SITES" ]]; then
     sites_json+="${sep}${obj}"
     sep=","
   done
-  shopt -u nullglob
 fi
 
 log "DONE list (${sep:+sites present})"
-echo "{\"status\":\"ok\",\"sites\":[${sites_json}]}"
+printf '%s\n' "{\"status\":\"ok\",\"sites\":[${sites_json}]}"
