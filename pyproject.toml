@@ -1,0 +1,41 @@
+[project]
+name = "hostzilla-panel"
+description = "Hostzilla control panel — web UI and privileged runner client."
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["panel"]
+addopts = "-ra --strict-markers"
+filterwarnings = ["error::DeprecationWarning:panel.*"]
+
+[tool.ruff]
+line-length = 90
+target-version = "py310"
+extend-exclude = ["panel/venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    # The panel targets the Python that ships with Ubuntu 22.04 (3.10) and is
+    # deliberately written in a plain style; .format() over f-strings is fine.
+    "UP032",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "app",
+    "auth",
+    "config",
+    "jobs",
+    "models",
+    "runner_client",
+    "security",
+    "wsgi",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests import panel modules that only resolve once conftest has extended
+# sys.path, so the imports cannot sit at the top of every module.
+"tests/*" = ["E402"]
