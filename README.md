@@ -8,8 +8,7 @@
 
 </div>
 
-<!-- screenshot: replace with a real dashboard screenshot — docs/assets/dashboard.png -->
-<p align="center"><em>[ screenshot coming soon — the Hostzilla dashboard ]</em></p>
+<p align="center"><em>Hostzilla is at v0.1. It installs, provisions real sites, and is honest about what it does not do yet — see <a href="#status">Status</a>.</em></p>
 
 ---
 
@@ -27,14 +26,14 @@ You own the server. You own the data. No licensing fees, no per-account pricing,
 - **One-command install** — go from a fresh Ubuntu box to a working panel in minutes.
 - **Per-site isolation** — every site gets its own database, its own PHP-FPM pool, and its own vhost. Sites don't share a runtime.
 - **Automatic SSL** — opt in and Hostzilla issues and installs a Let's Encrypt certificate for you.
-- **Built-in website builder** *(coming soon)* — design and publish sites visually, right from the panel.
+- **Auditable by design** — the panel never runs arbitrary shell. It can only invoke three validated, root-owned provisioning verbs through a tight sudoers allowlist.
 
 ## Quick Install
 
 On a **fresh Ubuntu 22.04 or 24.04 server**, as root:
 
 ```bash
-git clone <repo> hostzilla
+git clone https://github.com/iampopye/hostzilla.git
 sudo bash hostzilla/install.sh
 ```
 
@@ -49,6 +48,36 @@ After install, your server has:
 - For each site you create: an Apache vhost, a docroot under `/var/www`, a MySQL database and user, a dedicated PHP-FPM pool, and (optionally) a live SSL certificate.
 - A job queue and live logs so you can watch every provisioning step.
 - Config at `/etc/hostzilla/hostzilla.conf`, logs at `/var/log/hostzilla/`, and the panel database at `/var/lib/hostzilla/hostzilla.db`.
+
+## Status
+
+Hostzilla is **v0.1**. Here is exactly where it stands, so you can decide
+whether it is useful to you today.
+
+**Works now**
+
+- One-command install on a fresh Ubuntu 22.04 / 24.04 server
+- Create static, PHP and WordPress sites from the dashboard
+- Per-site Apache vhost, PHP-FPM pool, MySQL database and user
+- Optional Let's Encrypt certificate when DNS already points at the server
+- Delete a site, including its database
+- Async job queue with live status and logs
+- Change your panel password
+
+**Not built yet** — no part of the panel does these today
+
+- Visual / drag-and-drop site builder
+- Email hosting, DNS management, backups
+- Multiple panel users, reseller accounts, billing
+- nginx support (Apache only)
+- Editing a site after creation, beyond deleting and recreating it
+
+**Known limits**
+
+- One operator account. There is no user management UI.
+- The panel assumes it owns Apache, PHP-FPM and MySQL on the machine.
+- The login throttle is per worker process, not cluster-wide.
+- `install.sh` targets Ubuntu specifically; other distributions are untested.
 
 ## Requirements
 
@@ -82,13 +111,21 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design.
 
 ## Roadmap
 
-v0.1 delivers install → log in → create & host real sites with automatic SSL. The visual drag-and-drop builder and more follow.
+v0.1 delivers install → log in → create and host real sites with automatic SSL.
+A visual site builder is the intended direction but **is not built** — nothing in
+the panel does this today.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased plan.
 
 ## Contributing
 
 Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to set up a dev environment, the repo layout, the runner contract, and how to test safely in an LXD sandbox.
+
+## Security
+
+Hostzilla runs privileged provisioning verbs as root through a sudoers
+allowlist. If you find a security issue, please report it privately — see
+[`SECURITY.md`](SECURITY.md).
 
 ## License
 
@@ -100,3 +137,11 @@ build on Hostzilla without the AGPL's source-sharing obligations, see
 
 Contributions require signing the [CLA](CLA.md) — this is what keeps the
 commercial option possible.
+
+---
+
+Maintained by Karan Garg —
+GitHub [@iampopye](https://github.com/iampopye) ·
+X [@mrtechgarg](https://x.com/mrtechgarg) ·
+[LinkedIn](https://www.linkedin.com/in/karan-garg-tech/) ·
+[kgupta0183@gmail.com](mailto:kgupta0183@gmail.com)
