@@ -1,0 +1,1291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hostzilla — the open-source hosting control panel for Ubuntu</title>
+<meta name="description" content="Hostzilla is a free, open-source hosting control panel for Ubuntu. Install with one command, then create static, PHP and WordPress sites with their own Apache vhost, PHP-FPM pool, MySQL database and Let's Encrypt SSL. A self-hosted alternative to cPanel and WHM.">
+<meta name="author" content="Karan Garg">
+<meta name="theme-color" content="#05100b">
+<link rel="canonical" href="https://github.com/iampopye/hostzilla">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hostzilla">
+<meta property="og:title" content="Hostzilla — the open-source hosting control panel for Ubuntu">
+<meta property="og:description" content="One command installs it. Then create real websites — Apache vhost, isolated PHP-FPM pool, MySQL database and free SSL — from a clean dashboard. AGPL-3.0. Try the panel in your browser.">
+<meta property="og:url" content="https://github.com/iampopye/hostzilla">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Hostzilla — open-source hosting control panel for Ubuntu">
+<meta name="twitter:description" content="Install on a fresh Ubuntu server with one command. Create static, PHP and WordPress sites with isolated PHP-FPM pools, MySQL databases and free SSL. Try it in your browser.">
+<meta name="twitter:creator" content="@mrtechgarg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Hostzilla",
+  "alternateName": "Hostzilla Control Panel",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Web Hosting Control Panel",
+  "operatingSystem": "Ubuntu 22.04, Ubuntu 24.04",
+  "softwareVersion": "0.1.0",
+  "description": "Hostzilla is an open-source hosting control panel for Ubuntu. It installs with one command and provisions websites end to end: Apache virtual host, isolated PHP-FPM pool, MySQL database and user, and an optional Let's Encrypt certificate.",
+  "url": "https://github.com/iampopye/hostzilla",
+  "codeRepository": "https://github.com/iampopye/hostzilla",
+  "programmingLanguage": ["Python", "Shell"],
+  "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Karan Garg",
+    "url": "https://github.com/iampopye",
+    "sameAs": [
+      "https://github.com/iampopye",
+      "https://x.com/mrtechgarg",
+      "https://www.linkedin.com/in/karan-garg-tech/"
+    ]
+  }
+}
+</script>
+
+<style>
+/* ============================================================
+   1. The panel's real stylesheet, embedded verbatim.
+   Generated — see tools/build_landing_page.py
+   ============================================================ */
+/*__PANEL_CSS__*/
+
+/* ============================================================
+   2. Landing page chrome.
+   The marketing shell follows the visitor's colour scheme; the
+   embedded panel keeps the product's own dark theme, because
+   that is genuinely what the product looks like.
+   ============================================================ */
+:root {
+  --page-bg: #05100b;
+  --page-fg: #e6f5ec;
+  --page-muted: #93b3a3;
+  --page-card: #0c1d14;
+  --page-line: #173a28;
+  --page-accent: #34d399;
+  --page-accent-fg: #04140d;
+  --page-code-bg: #071a11;
+  --max: 1080px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --page-bg: #f6faf7;
+    --page-fg: #0b1f16;
+    /* 4.9:1 on --page-bg — meets WCAG AA for body text */
+    --page-muted: #46685a;
+    --page-card: #ffffff;
+    --page-line: #cfe3d7;
+    --page-accent: #0f7a55;
+    --page-accent-fg: #ffffff;
+    --page-code-bg: #0c1d14;
+  }
+}
+
+html, body.lp {
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-size: 16px;
+}
+body.lp { min-height: 100vh; }
+body.lp a { color: var(--page-accent); }
+
+.lp-wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+
+/* skip link for keyboard users */
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--page-accent); color: var(--page-accent-fg);
+  padding: 10px 16px; border-radius: 0 0 8px 0; z-index: 100; font-weight: 700;
+}
+.skip:focus { left: 0; }
+
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--page-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---- persistent demo badge ---- */
+.demo-flag {
+  position: sticky; top: 0; z-index: 60;
+  background: #7c2d12; color: #ffedd5;
+  border-bottom: 1px solid #9a3412;
+  font-size: 14px; font-weight: 600;
+  text-align: center; padding: 9px 16px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  flex-wrap: wrap;
+}
+.demo-flag strong { color: #fff; }
+.demo-flag .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #fdba74; display: inline-block; flex: 0 0 auto;
+}
+
+/* ---- hero ---- */
+.lp-hero { padding: 64px 0 44px; text-align: center; }
+.lp-hero .rex-hero { font-size: 68px; line-height: 1; display: block; margin-bottom: 8px; }
+.lp-hero h1 {
+  font-size: clamp(2.4rem, 7vw, 4rem); margin: 0 0 6px; letter-spacing: -.02em;
+}
+.lp-hero .tag {
+  font-size: clamp(1rem, 2.6vw, 1.3rem); color: var(--page-accent);
+  font-weight: 600; margin: 0 0 20px;
+}
+.lp-hero .lede {
+  font-size: clamp(1rem, 2.2vw, 1.15rem); color: var(--page-muted);
+  max-width: 60ch; margin: 0 auto 28px;
+}
+.pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px; }
+.pill {
+  border: 1px solid var(--page-line); border-radius: 999px;
+  padding: 5px 13px; font-size: 13px; color: var(--page-muted);
+  background: var(--page-card);
+}
+
+.cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.lp-btn {
+  display: inline-block; padding: 12px 22px; border-radius: 10px;
+  font-weight: 700; font-size: 15px; border: 1px solid transparent; cursor: pointer;
+}
+.lp-btn-primary { background: var(--page-accent); color: var(--page-accent-fg); }
+.lp-btn-primary:hover { text-decoration: none; filter: brightness(1.08); }
+.lp-btn-ghost {
+  background: transparent; color: var(--page-fg); border-color: var(--page-line);
+}
+.lp-btn-ghost:hover { text-decoration: none; border-color: var(--page-accent); }
+
+/* ---- install command ---- */
+.install {
+  margin: 30px auto 0; max-width: 640px; text-align: left;
+  background: var(--page-code-bg); border: 1px solid var(--page-line);
+  border-radius: 12px; overflow: hidden;
+}
+.install-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; border-bottom: 1px solid var(--page-line);
+  font-size: 12px; color: #7fa492; letter-spacing: .06em; text-transform: uppercase;
+}
+.install pre {
+  margin: 0; padding: 14px; overflow-x: auto; color: #a7f3d0; font-size: 13.5px;
+}
+.copy-btn {
+  background: transparent; border: 1px solid var(--page-line); color: #a7f3d0;
+  border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+  font-family: inherit;
+}
+.copy-btn:hover { border-color: var(--page-accent); }
+.copy-btn[data-copied="1"] { background: var(--page-accent); color: var(--page-accent-fg); }
+
+/* ---- generic section ---- */
+.lp-section { padding: 54px 0; border-top: 1px solid var(--page-line); }
+.lp-section > h2 {
+  font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0 0 10px; letter-spacing: -.01em;
+}
+.lp-section > .sub {
+  color: var(--page-muted); max-width: 68ch; margin: 0 0 28px; font-size: 1.02rem;
+}
+
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.lp-card {
+  background: var(--page-card); border: 1px solid var(--page-line);
+  border-radius: 12px; padding: 20px;
+}
+.lp-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.lp-card p { margin: 0; color: var(--page-muted); font-size: .95rem; }
+
+/* ---- honesty / status ---- */
+.status-cols { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.status-list { list-style: none; margin: 0; padding: 0; }
+.status-list li {
+  padding: 6px 0 6px 26px; position: relative; color: var(--page-muted); font-size: .95rem;
+}
+.status-list li::before { position: absolute; left: 0; top: 6px; font-weight: 700; }
+.yes li::before { content: "✓"; color: var(--page-accent); }
+.no li::before { content: "✕"; color: #f87171; }
+
+/* ---- demo shell ---- */
+.demo-shell {
+  border: 1px solid var(--page-line); border-radius: 14px; overflow: hidden;
+  background: #05100b; box-shadow: 0 10px 40px rgba(0,0,0,.35);
+}
+.demo-bar {
+  background: #7c2d12; color: #ffedd5; padding: 8px 14px;
+  font-size: 13px; font-weight: 600; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap;
+}
+.demo-bar .spacer { flex: 1 1 auto; }
+.demo-bar button {
+  background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.3);
+  color: #ffedd5; border-radius: 6px; padding: 3px 10px; font-size: 12px;
+  cursor: pointer; font-family: inherit;
+}
+.demo-bar button:hover { background: rgba(0,0,0,.45); }
+/* The panel inside the demo is dark by design; pin its variables so a light
+   system theme cannot half-recolour the product UI. */
+.demo-body {
+  color-scheme: dark;
+  background: radial-gradient(1200px 600px at 80% -10%, #0a2418 0%, #05100b 55%);
+  color: #e6f5ec; font-size: 15px; min-height: 420px;
+}
+.demo-body .container { padding: 20px 24px 34px; }
+.demo-body a { color: #34d399; }
+
+/* config viewer */
+.cfg-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.cfg-tab {
+  background: #0f241a; border: 1px solid #173a28; color: #7fa492;
+  padding: 6px 13px; border-radius: 8px; cursor: pointer; font-size: 13px;
+  font-family: inherit;
+}
+.cfg-tab[aria-selected="true"] { background: #34d399; color: #04140d; border-color: #34d399; font-weight: 700; }
+.cfg-out {
+  background: #071a11; border: 1px solid #173a28; border-radius: 10px;
+  padding: 14px; margin: 0; overflow-x: auto; font-size: 12.5px; color: #a7f3d0;
+  max-height: 380px; overflow-y: auto; white-space: pre;
+}
+
+/* ---- contact ---- */
+.contact-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.contact-card {
+  background: var(--page-card); border: 1px solid var(--page-line);
+  border-radius: 12px; padding: 18px;
+}
+.contact-card h3 { margin: 0 0 6px; font-size: 1rem; }
+.contact-card p { margin: 0 0 10px; color: var(--page-muted); font-size: .92rem; }
+
+.lp-foot {
+  border-top: 1px solid var(--page-line); padding: 30px 0 50px;
+  color: var(--page-muted); font-size: .92rem; text-align: center;
+}
+.lp-foot .links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+
+@media (max-width: 560px) {
+  .lp-hero { padding: 40px 0 30px; }
+  .demo-body .container { padding: 16px 14px 26px; }
+  .nav-inner { padding: 10px 14px; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+</style>
+</head>
+
+<body class="lp">
+<a class="skip" href="#demo">Skip to the live demo</a>
+
+<div class="demo-flag" role="note">
+  <span class="dot" aria-hidden="true"></span>
+  <span><strong>Demo — runs entirely in your browser.</strong> No server is contacted; nothing is installed.</span>
+</div>
+
+<header class="lp-hero">
+  <div class="lp-wrap">
+    <span class="rex-hero" aria-hidden="true">🦖</span>
+    <h1>Hostzilla</h1>
+    <p class="tag">one giant panel. sites included.</p>
+    <p class="lede">
+      The open-source hosting control panel for Ubuntu. Install it on your own
+      server with one command, then create real websites — each with its own
+      Apache virtual host, isolated PHP-FPM pool, MySQL database and free SSL —
+      from a clean dashboard.
+    </p>
+
+    <div class="pills">
+      <span class="pill">AGPL-3.0</span>
+      <span class="pill">Ubuntu 22.04 / 24.04</span>
+      <span class="pill">Apache + PHP-FPM + MySQL</span>
+      <span class="pill">v0.1</span>
+    </div>
+
+    <div class="cta-row">
+      <a class="lp-btn lp-btn-primary" href="#demo">Try the panel below</a>
+      <a class="lp-btn lp-btn-ghost" href="https://github.com/iampopye/hostzilla">View on GitHub</a>
+    </div>
+
+    <div class="install">
+      <div class="install-head">
+        <span>Install on a fresh Ubuntu server</span>
+        <button class="copy-btn" type="button" data-copy="#install-cmd">Copy</button>
+      </div>
+      <pre id="install-cmd">git clone https://github.com/iampopye/hostzilla.git
+sudo bash hostzilla/install.sh</pre>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================ DEMO ============================ -->
+<section class="lp-section" id="demo">
+  <div class="lp-wrap">
+    <h2>Try Hostzilla right here</h2>
+    <p class="sub">
+      This is the actual panel interface, running on this page with the real
+      stylesheet and the real validation rules. Create a site and it shows you
+      the <strong>exact</strong> Apache virtual host, PHP-FPM pool and SQL that
+      Hostzilla would write on your server — so you can see precisely what it
+      does before you let it near a machine. Your sites are saved in this
+      browser and survive a reload.
+    </p>
+
+    <div class="demo-shell">
+      <div class="demo-bar">
+        <span class="dot" aria-hidden="true">●</span>
+        <span>Simulated panel — browser only, no backend, nothing installed</span>
+        <span class="spacer"></span>
+        <button type="button" id="demo-seed">Load sample sites</button>
+        <button type="button" id="demo-reset">Reset demo</button>
+      </div>
+
+      <div class="demo-body">
+        <header class="topnav">
+          <div class="nav-inner">
+            <span class="brand"><span class="rex" aria-hidden="true">🦖</span><span class="brand-text">Hostzilla</span></span>
+            <nav class="nav-links" id="demo-nav" aria-label="Demo panel">
+              <a href="#demo" data-view="dashboard" class="active">Dashboard</a>
+              <a href="#demo" data-view="sites">Sites</a>
+              <a href="#demo" data-view="create">Create</a>
+              <a href="#demo" data-view="jobs">Jobs</a>
+            </nav>
+            <span class="user-chip" style="margin-left:auto">admin</span>
+          </div>
+        </header>
+
+        <div class="container">
+          <div id="demo-flash" aria-live="polite"></div>
+          <div id="demo-view"></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="sub" style="margin-top:18px">
+      Want the real thing? It is two commands on a fresh Ubuntu box —
+      <a href="#top-install" onclick="document.querySelector('.install').scrollIntoView({behavior:'smooth'});return false;">see the install command above</a>,
+      or read the <a href="https://github.com/iampopye/hostzilla#readme">README</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ WHAT YOU GET ============================ -->
+<section class="lp-section">
+  <div class="lp-wrap">
+    <h2>What one click actually provisions</h2>
+    <p class="sub">No magic, no proprietary formats. Everything Hostzilla writes is ordinary config you could have written yourself.</p>
+    <div class="grid">
+      <div class="lp-card">
+        <h3>Apache virtual host</h3>
+        <p>Its own vhost with directory indexes off and dotfiles denied, so a stray <code>.env</code> or <code>.git</code> is never served.</p>
+      </div>
+      <div class="lp-card">
+        <h3>Isolated PHP-FPM pool</h3>
+        <p>A dedicated pool and Unix socket per site, with <code>open_basedir</code> confining PHP to that site's document root.</p>
+      </div>
+      <div class="lp-card">
+        <h3>MySQL database and user</h3>
+        <p>A database, a dedicated user, and a randomly generated password — scoped so one site cannot read another's data.</p>
+      </div>
+      <div class="lp-card">
+        <h3>Free SSL, when DNS is ready</h3>
+        <p>Opt in and Hostzilla runs certbot — but only after checking the domain actually resolves to this server, so you never burn rate limits.</p>
+      </div>
+      <div class="lp-card">
+        <h3>WordPress, configured properly</h3>
+        <p>Core downloaded, <code>wp-config.php</code> written with your credentials and <strong>freshly generated auth salts</strong> — not the sample placeholders.</p>
+      </div>
+      <div class="lp-card">
+        <h3>A job queue you can watch</h3>
+        <p>Every provisioning run is a job with live status and full logs, so a failure tells you which step broke and why.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SECURITY ============================ -->
+<section class="lp-section">
+  <div class="lp-wrap">
+    <h2>Built to keep root at arm's length</h2>
+    <p class="sub">
+      A control panel needs root to do its job. The design question is how narrow
+      the path to it is.
+    </p>
+    <div class="grid">
+      <div class="lp-card">
+        <h3>The panel never runs shell</h3>
+        <p>It builds an argument array, never a command string, and never invokes a shell interpreter.</p>
+      </div>
+      <div class="lp-card">
+        <h3>Three verbs, listed literally</h3>
+        <p>Sudo permits exactly <code>site_create</code>, <code>site_delete</code> and <code>site_list</code>. No wildcard paths, no shell in the allowlist.</p>
+      </div>
+      <div class="lp-card">
+        <h3>Validated twice, trusted once</h3>
+        <p>The panel validates for your benefit; the root-owned verb validates again for everyone's. Neither trusts the other.</p>
+      </div>
+      <div class="lp-card">
+        <h3>Failures roll back</h3>
+        <p>A create that dies halfway undoes its own work, so you are never left with a half-provisioned site you cannot retry.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:22px">
+      The full threat model — including the weaknesses, which are stated plainly
+      rather than left for you to discover — is in
+      <a href="https://github.com/iampopye/hostzilla/blob/main/SECURITY.md">SECURITY.md</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ============================ STATUS ============================ -->
+<section class="lp-section">
+  <div class="lp-wrap">
+    <h2>Where Hostzilla actually is</h2>
+    <p class="sub">
+      It is v0.1. Here is the honest split, so you can decide whether it is
+      useful to you today rather than finding out after you install it.
+    </p>
+    <div class="status-cols">
+      <div class="lp-card">
+        <h3>Works today</h3>
+        <ul class="status-list yes">
+          <li>One-command install on fresh Ubuntu 22.04 / 24.04</li>
+          <li>Static, PHP and WordPress sites</li>
+          <li>Per-site vhost, PHP-FPM pool, database and user</li>
+          <li>Let's Encrypt SSL when DNS points here</li>
+          <li>Delete a site, including its database</li>
+          <li>Job queue with live status and logs</li>
+        </ul>
+      </div>
+      <div class="lp-card">
+        <h3>Not built yet</h3>
+        <ul class="status-list no">
+          <li>Visual / drag-and-drop site builder</li>
+          <li>Email hosting, DNS management, backups</li>
+          <li>Multiple panel users, resellers, billing</li>
+          <li>nginx support — Apache only</li>
+          <li>Editing a site after it is created</li>
+        </ul>
+      </div>
+      <div class="lp-card">
+        <h3>Know before you deploy</h3>
+        <ul class="status-list no">
+          <li>All sites run as <code>www-data</code> — not hostile-tenant isolation</li>
+          <li>One operator account, no roles</li>
+          <li>Assumes it owns Apache, PHP-FPM and MySQL on the box</li>
+          <li>Plain HTTP until you put a certificate on the panel</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ LICENSING ============================ -->
+<section class="lp-section" id="licensing">
+  <div class="lp-wrap">
+    <h2>Licensing</h2>
+    <p class="sub">
+      Hostzilla is <a href="https://github.com/iampopye/hostzilla/blob/main/LICENSE">AGPL-3.0-or-later</a>.
+      If you are installing it on your own servers — for yourself, your clients
+      or your company — that already covers you, at no cost.
+    </p>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>Self-hosting</h3>
+        <p>The AGPL is enough. Install it, modify it, keep it. Nothing to sign, nothing to pay.</p>
+        <a href="https://github.com/iampopye/hostzilla">Get started →</a>
+      </div>
+      <div class="contact-card">
+        <h3>Building a product on it</h3>
+        <p>A commercial licence removes the AGPL's obligation to publish your modifications when you offer it over a network.</p>
+        <a href="https://github.com/iampopye/hostzilla/blob/main/COMMERCIAL.md">Commercial licensing →</a>
+      </div>
+      <div class="contact-card">
+        <h3>Commercial enquiry</h3>
+        <p>Describe what you are building and how you will distribute it — that is usually enough to work out which licence you need.</p>
+        <a href="mailto:kgupta0183@gmail.com?subject=Hostzilla%20commercial%20licence%20enquiry">kgupta0183@gmail.com</a>
+      </div>
+      <div class="contact-card">
+        <h3>Security issue</h3>
+        <p>Please report privately rather than opening a public issue. Hostzilla runs as root on other people's servers.</p>
+        <a href="mailto:kgupta0183@gmail.com?subject=Hostzilla%20security%20report">kgupta0183@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="lp-foot">
+  <div class="lp-wrap">
+    <div class="links">
+      <a href="https://github.com/iampopye/hostzilla">GitHub</a>
+      <a href="https://github.com/iampopye/hostzilla/blob/main/README.md">Docs</a>
+      <a href="https://github.com/iampopye/hostzilla/blob/main/SECURITY.md">Security</a>
+      <a href="https://github.com/iampopye/hostzilla/blob/main/CONTRIBUTING.md">Contributing</a>
+      <a href="https://github.com/iampopye/hostzilla/blob/main/COMMERCIAL.md">Commercial</a>
+    </div>
+    <p>
+      Maintained by Karan Garg —
+      <a href="https://github.com/iampopye">GitHub @iampopye</a> ·
+      <a href="https://x.com/mrtechgarg">X @mrtechgarg</a> ·
+      <a href="https://www.linkedin.com/in/karan-garg-tech/">LinkedIn</a> ·
+      <a href="mailto:kgupta0183@gmail.com">kgupta0183@gmail.com</a>
+    </p>
+    <p>Hostzilla 🦖 — one giant panel. sites included. · AGPL-3.0-or-later © 2026 Karan Garg</p>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   Hostzilla in-browser demo.
+
+   Everything here runs locally. There is no network call of any kind.
+
+   The configuration templates below are a deliberate port of
+   runner/site_create.sh and runner/_lib.sh. If you change one, change the
+   other — tests/test_config_templates.py compares them and fails the build
+   when they drift.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var STORE_KEY = "hostzilla.demo.v1";
+  var PHPVER = "8.3";                 // what Ubuntu 24.04 ships
+  var DEMO_IP = "203.0.113.10";       // TEST-NET-3, never a real host
+
+  /* ---------------------------------------------------------------- sha256
+     Needed so db_slug() matches the shell's `sha256sum` byte for byte.
+     Synchronous because SubtleCrypto is async and the templates are pure. */
+  function sha256Hex(ascii) {
+    function rr(n, x) { return (x >>> n) | (x << (32 - n)); }
+    var mathPow = Math.pow, maxWord = mathPow(2, 32), i, j, result = "";
+    var words = [], asciiBitLength = ascii.length * 8;
+    var hash = sha256Hex.h = sha256Hex.h || [];
+    var k = sha256Hex.k = sha256Hex.k || [];
+    var primeCounter = k.length, isComposite = {};
+    for (var candidate = 2; primeCounter < 64; candidate++) {
+      if (!isComposite[candidate]) {
+        for (i = 0; i < 313; i += candidate) { isComposite[i] = candidate; }
+        hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+        k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+      }
+    }
+    ascii += "\x80";
+    while (ascii.length % 64 - 56) { ascii += "\x00"; }
+    for (i = 0; i < ascii.length; i++) {
+      j = ascii.charCodeAt(i);
+      if (j >> 8) { return null; }
+      words[i >> 2] |= j << ((3 - i) % 4) * 8;
+    }
+    words[words.length] = (asciiBitLength / maxWord) | 0;
+    words[words.length] = asciiBitLength;
+
+    for (j = 0; j < words.length;) {
+      var w = words.slice(j, j += 16), oldHash = hash;
+      hash = hash.slice(0, 8);
+      for (i = 0; i < 64; i++) {
+        var w15 = w[i - 15], w2 = w[i - 2];
+        var a = hash[0], e = hash[4];
+        var temp1 = hash[7]
+          + (rr(6, e) ^ rr(11, e) ^ rr(25, e))
+          + ((e & hash[5]) ^ (~e & hash[6]))
+          + k[i]
+          + (w[i] = (i < 16) ? w[i] : (
+              w[i - 16]
+              + (rr(7, w15) ^ rr(18, w15) ^ (w15 >>> 3))
+              + w[i - 7]
+              + (rr(17, w2) ^ rr(19, w2) ^ (w2 >>> 10))
+            ) | 0);
+        var temp2 = (rr(2, a) ^ rr(13, a) ^ rr(22, a))
+          + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+        hash = [(temp1 + temp2) | 0].concat(hash);
+        hash[4] = (hash[4] + temp1) | 0;
+      }
+      for (i = 0; i < 8; i++) { hash[i] = (hash[i] + oldHash[i]) | 0; }
+    }
+    for (i = 0; i < 8; i++) {
+      for (j = 3; j + 1; j--) {
+        var b = (hash[i] >> (j * 8)) & 255;
+        result += ((b < 16) ? 0 : "") + b.toString(16);
+      }
+    }
+    return result;
+  }
+
+  /* ------------------------------------------------- validation (_lib.sh)
+     Port of validate_domain(). Same rules, same rejection reasons. */
+  function validateDomain(raw) {
+    var d = String(raw == null ? "" : raw).toLowerCase();
+    if (!d) { return { ok: false, message: "empty domain" }; }
+    if (d.length > 253) { return { ok: false, message: "domain too long" }; }
+    if (!/^[a-z0-9.-]+$/.test(d)) { return { ok: false, message: "invalid domain: " + d }; }
+    if (d.indexOf("..") !== -1) { return { ok: false, message: "invalid domain (empty label): " + d }; }
+    if (d.charAt(0) === "." || d.charAt(d.length - 1) === ".") {
+      return { ok: false, message: "invalid domain (leading/trailing dot): " + d };
+    }
+    if (d.indexOf(".") === -1) {
+      return { ok: false, message: "invalid domain (must be fully qualified): " + d };
+    }
+    var labels = d.split(".");
+    for (var i = 0; i < labels.length; i++) {
+      var label = labels[i];
+      if (!label) { return { ok: false, message: "invalid domain (empty label): " + d }; }
+      if (label.length > 63) { return { ok: false, message: "invalid domain (label too long): " + d }; }
+      if (label.charAt(0) === "-" || label.charAt(label.length - 1) === "-") {
+        return { ok: false, message: "invalid domain (label hyphen): " + d };
+      }
+      if (!/^[a-z0-9-]+$/.test(label)) { return { ok: false, message: "invalid domain: " + d }; }
+    }
+    if (/^[0-9]+$/.test(labels[labels.length - 1])) {
+      return { ok: false, message: "invalid domain (numeric TLD): " + d };
+    }
+    return { ok: true, domain: d };
+  }
+
+  var PROTECTED = ["", "localhost", "html"];
+  function isProtected(d) { return PROTECTED.indexOf(String(d).toLowerCase()) !== -1; }
+
+  /* db_slug() from _lib.sh: hz_<20 sanitised chars>_<8 hex of sha256> */
+  function dbSlug(domain) {
+    var base = domain.replace(/[^a-z0-9]/g, "_").slice(0, 19);
+    return "hz_" + base + "_" + sha256Hex(domain).slice(0, 8);
+  }
+
+  function randomHex(n) {
+    var bytes = new Uint8Array(n);
+    (window.crypto || window.msCrypto).getRandomValues(bytes);
+    return Array.prototype.map.call(bytes, function (b) {
+      return ("0" + b.toString(16)).slice(-2);
+    }).join("");
+  }
+
+  /* ------------------------------------------- config templates (site_create.sh)
+     These strings mirror the heredocs in runner/site_create.sh exactly. */
+  function poolConfig(s) {
+    return "; Hostzilla per-site pool for " + s.domain + "\n" +
+      "[hz-" + s.domain + "]\n" +
+      "user = www-data\n" +
+      "group = www-data\n" +
+      "listen = " + s.sock + "\n" +
+      "listen.owner = www-data\n" +
+      "listen.group = www-data\n" +
+      "pm = ondemand\n" +
+      "pm.max_children = 5\n" +
+      "pm.process_idle_timeout = 10s\n" +
+      "pm.max_requests = 500\n" +
+      "chdir = " + s.docroot + "\n" +
+      "php_admin_value[open_basedir] = " + s.docroot + ":/tmp:/usr/share/php\n" +
+      "php_admin_value[upload_tmp_dir] = /tmp\n" +
+      "php_admin_flag[expose_php] = off\n" +
+      "env[HZ_DB_NAME] = " + s.db + "\n" +
+      "env[HZ_DB_USER] = " + s.dbuser + "\n" +
+      "env[HZ_DB_PASS] = " + s.dbpass + "\n";
+  }
+
+  function vhostConfig(s) {
+    return "<VirtualHost *:80>\n" +
+      "    ServerName " + s.domain + "\n" +
+      "    DocumentRoot " + s.docroot + "\n" +
+      "    DirectoryIndex index.php index.html\n" +
+      "    <Directory " + s.docroot + ">\n" +
+      "        Require all granted\n" +
+      "        AllowOverride All\n" +
+      "        # No directory listings — an empty or partially uploaded site must not\n" +
+      "        # expose a browsable file index.\n" +
+      "        Options -Indexes +FollowSymLinks\n" +
+      "    </Directory>\n" +
+      "    # Never serve dotfiles: .git, .env and friends routinely leak credentials.\n" +
+      "    # .well-known stays reachable so ACME http-01 renewals keep working.\n" +
+      "    <FilesMatch \"^\\.\">\n" +
+      "        Require all denied\n" +
+      "    </FilesMatch>\n" +
+      "    <DirectoryMatch \"/\\.(?!well-known)\">\n" +
+      "        Require all denied\n" +
+      "    </DirectoryMatch>\n" +
+      "    <FilesMatch \\.php$>\n" +
+      "        SetHandler \"proxy:unix:" + s.sock + "|fcgi://localhost\"\n" +
+      "    </FilesMatch>\n" +
+      "    ErrorLog  ${APACHE_LOG_DIR}/" + s.domain + "-error.log\n" +
+      "    CustomLog ${APACHE_LOG_DIR}/" + s.domain + "-access.log combined\n" +
+      "</VirtualHost>\n";
+  }
+
+  function sqlStatements(s) {
+    return "CREATE DATABASE IF NOT EXISTS `" + s.db + "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\n" +
+      "CREATE USER IF NOT EXISTS '" + s.dbuser + "'@'localhost' IDENTIFIED BY '" + s.dbpass + "';\n" +
+      "ALTER USER '" + s.dbuser + "'@'localhost' IDENTIFIED BY '" + s.dbpass + "';\n" +
+      "GRANT ALL PRIVILEGES ON `" + s.db + "`.* TO '" + s.dbuser + "'@'localhost';\n" +
+      "FLUSH PRIVILEGES;\n";
+  }
+
+  function manifestFile(s) {
+    return "DOMAIN=" + s.domain + "\n" +
+      "TYPE=" + s.type + "\n" +
+      "DOCROOT=" + s.docroot + "\n" +
+      "DB_NAME=" + s.db + "\n" +
+      "DB_USER=" + s.dbuser + "\n" +
+      "DB_PASS=" + s.dbpass + "\n" +
+      "PHP_SOCK=" + s.sock + "\n" +
+      "PHP_POOL=" + s.pool + "\n" +
+      "CREATED=" + s.created + "\n";
+  }
+
+  function buildSite(domain, type, wantSsl) {
+    var db = dbSlug(domain);
+    var s = {
+      domain: domain,
+      type: type,
+      ssl: false,
+      sslState: "none",
+      docroot: "/var/www/" + domain,
+      sock: "/run/php/hz-" + domain + ".sock",
+      pool: "/etc/php/" + PHPVER + "/fpm/pool.d/hz-" + domain + ".conf",
+      vhostPath: "/etc/apache2/sites-available/" + domain + ".conf",
+      db: db,
+      dbuser: db,
+      dbpass: randomHex(16),
+      wantSsl: !!wantSsl,
+      created: new Date().toISOString().replace(/\.\d+Z$/, "Z")
+    };
+    return s;
+  }
+
+  /* ------------------------------------------------------------- storage */
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      if (!raw) { return { sites: [], jobs: [], nextJob: 1 }; }
+      var parsed = JSON.parse(raw);
+      return {
+        sites: parsed.sites || [],
+        jobs: parsed.jobs || [],
+        nextJob: parsed.nextJob || 1
+      };
+    } catch (e) {
+      return { sites: [], jobs: [], nextJob: 1 };
+    }
+  }
+  function save() {
+    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    catch (e) { /* private mode: the demo still works for this session */ }
+  }
+
+  var state = load();
+  var view = "dashboard";
+  var activeJobId = null;
+  var cfgTab = "vhost";
+
+  /* --------------------------------------------------------------- render */
+  var elView = document.getElementById("demo-view");
+  var elFlash = document.getElementById("demo-flash");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function flash(message, kind) {
+    elFlash.innerHTML = '<div class="flash-stack"><div class="flash flash-' +
+      esc(kind || "ok") + '">' + esc(message) + "</div></div>";
+    window.setTimeout(function () {
+      if (elFlash.firstChild) { elFlash.innerHTML = ""; }
+    }, 6000);
+  }
+
+  function counts() {
+    var out = { queued: 0, running: 0, ok: 0, error: 0, total: 0 };
+    state.jobs.forEach(function (j) {
+      if (out[j.status] === undefined) { out[j.status] = 0; }
+      out[j.status]++;
+      out.total++;
+    });
+    return out;
+  }
+
+  function badge(status) {
+    return '<span class="badge badge-' + esc(status) + '">' + esc(status) + "</span>";
+  }
+
+  function jobRow(j, withFinished) {
+    return "<tr>" +
+      '<td><a class="link" href="#demo" data-job="' + j.id + '">' + j.id + "</a></td>" +
+      "<td>" + esc(j.type) + "</td>" +
+      '<td class="mono">' + esc(j.domain) + "</td>" +
+      "<td>" + badge(j.status) + "</td>" +
+      '<td class="muted">' + esc(j.created) + "</td>" +
+      (withFinished ? '<td class="muted">' + esc(j.finished || "—") + "</td>" : "") +
+      "</tr>";
+  }
+
+  function renderDashboard() {
+    var c = counts();
+    var recent = state.jobs.slice().reverse().slice(0, 8);
+    return '<div class="page-head"><h1>Dashboard</h1>' +
+      '<a href="#demo" class="btn btn-primary" data-view="create">+ New site</a></div>' +
+      '<div class="stat-grid">' +
+        '<div class="card stat"><span class="stat-label">Sites</span>' +
+          '<span class="stat-value">' + state.sites.length + "</span></div>" +
+        '<div class="card stat"><span class="stat-label">Jobs (total)</span>' +
+          '<span class="stat-value">' + c.total + "</span></div>" +
+        '<div class="card stat"><span class="stat-label">Running / Queued</span>' +
+          '<span class="stat-value">' + c.running + " / " + c.queued + "</span></div>" +
+        '<div class="card stat"><span class="stat-label">Completed / Failed</span>' +
+          '<span class="stat-value">' + c.ok + ' / <span class="error-text">' + c.error + "</span></span></div>" +
+      "</div>" +
+      '<div class="card"><div class="card-head"><h2>Recent jobs</h2>' +
+      '<a href="#demo" class="link" data-view="jobs">View all</a></div>' +
+      (recent.length
+        ? '<table class="table"><thead><tr><th>#</th><th>Type</th><th>Domain</th><th>Status</th><th>Created</th></tr></thead><tbody>' +
+          recent.map(function (j) { return jobRow(j, false); }).join("") + "</tbody></table>"
+        : '<p class="muted empty">No jobs yet. Create your first site to get started.</p>') +
+      "</div>";
+  }
+
+  function renderSites() {
+    var body;
+    if (!state.sites.length) {
+      body = '<p class="muted empty">No sites yet. Click “New site” to provision one.</p>';
+    } else {
+      body = '<table class="table"><thead><tr><th>Domain</th><th>Type</th><th>Doc root</th><th>SSL</th><th>Created</th><th></th></tr></thead><tbody>' +
+        state.sites.map(function (s) {
+          return "<tr>" +
+            '<td><span class="link">' + esc(s.domain) + "</span></td>" +
+            '<td><span class="badge badge-type">' + esc(s.type) + "</span></td>" +
+            '<td class="mono muted">' + esc(s.docroot) + "</td>" +
+            "<td>" + (s.ssl ? '<span class="badge badge-ok">active</span>'
+                            : '<span class="badge badge-muted">none</span>') + "</td>" +
+            '<td class="muted">' + esc(s.created) + "</td>" +
+            '<td class="right">' +
+              '<button class="btn btn-sm btn-ghost" data-config="' + esc(s.domain) + '">View config</button> ' +
+              '<button class="btn btn-danger btn-sm" data-delete="' + esc(s.domain) + '">Delete</button>' +
+            "</td></tr>";
+        }).join("") + "</tbody></table>";
+    }
+    return '<div class="page-head"><h1>Sites</h1>' +
+      '<a href="#demo" class="btn btn-primary" data-view="create">+ New site</a></div>' +
+      '<div class="card">' + body + "</div>";
+  }
+
+  function renderCreate() {
+    return '<div class="page-head"><h1>Create a site</h1></div>' +
+      '<div class="card form-card"><form class="stack" id="demo-create">' +
+        "<label><span>Domain</span>" +
+        '<input type="text" name="domain" placeholder="example.com" autocomplete="off" ' +
+        'autocapitalize="off" spellcheck="false" required>' +
+        '<small class="muted">Validated with the exact rules the privileged runner enforces.</small></label>' +
+        "<label><span>Type</span><select name=\"type\">" +
+          '<option value="static">Static HTML</option>' +
+          '<option value="php">PHP</option>' +
+          '<option value="wordpress">WordPress</option>' +
+        "</select></label>" +
+        '<label class="check"><input type="checkbox" name="ssl" value="on">' +
+        "<span>Request a Let's Encrypt certificate (requires DNS to resolve here)</span></label>" +
+        '<div class="form-actions">' +
+        '<a href="#demo" class="btn btn-ghost" data-view="sites">Cancel</a>' +
+        '<button type="submit" class="btn btn-primary">Provision site</button></div>' +
+      "</form></div>" +
+      '<div class="card"><p class="muted" style="margin:0">' +
+      "Try <span class=\"mono\">shop.example.com</span>. Then try an invalid one — " +
+      "<span class=\"mono\">-bad.example.com</span> or <span class=\"mono\">example.com;id</span> — " +
+      "to see the runner's validation reject it, or create the same domain twice " +
+      "to see the failure path." +
+      "</p></div>";
+  }
+
+  function renderJobs() {
+    return '<div class="page-head"><h1>Jobs</h1></div><div class="card">' +
+      (state.jobs.length
+        ? '<table class="table"><thead><tr><th>#</th><th>Type</th><th>Domain</th><th>Status</th><th>Created</th><th>Finished</th></tr></thead><tbody>' +
+          state.jobs.slice().reverse().map(function (j) { return jobRow(j, true); }).join("") +
+          "</tbody></table>"
+        : '<p class="muted empty">No jobs have run yet.</p>') +
+      "</div>";
+  }
+
+  function findJob(id) {
+    for (var i = 0; i < state.jobs.length; i++) {
+      if (state.jobs[i].id === id) { return state.jobs[i]; }
+    }
+    return null;
+  }
+
+  function renderJobDetail() {
+    var j = findJob(activeJobId);
+    if (!j) { return renderJobs(); }
+    var result = j.result || {};
+    var resultHtml = "";
+    if (result.url) {
+      resultHtml += "<p><strong>URL:</strong> <span class=\"mono\">" + esc(result.url) + "</span></p>";
+    }
+    if (result.docroot) { resultHtml += '<p><strong>Doc root:</strong> <span class="mono">' + esc(result.docroot) + "</span></p>"; }
+    if (result.db) { resultHtml += '<p><strong>Database:</strong> <span class="mono">' + esc(result.db) + "</span></p>"; }
+    if (result.php_sock) { resultHtml += '<p><strong>PHP socket:</strong> <span class="mono">' + esc(result.php_sock) + "</span></p>"; }
+    if (result.ssl) { resultHtml += "<p><strong>SSL:</strong> " + esc(result.ssl) + "</p>"; }
+    if (result.message) { resultHtml += '<p class="error-text"><strong>Message:</strong> ' + esc(result.message) + "</p>"; }
+
+    var cfgHtml = "";
+    if (j.site && j.status === "ok") {
+      cfgHtml = '<h2 class="sub">Generated configuration</h2>' +
+        '<p class="muted" style="margin-top:-6px">This is byte-for-byte what Hostzilla writes on a real server.</p>' +
+        configPanel(j.site);
+    }
+
+    return '<div class="page-head"><h1>Job #' + j.id + "</h1>" +
+      '<a href="#demo" class="btn btn-ghost" data-view="jobs">Back to jobs</a></div>' +
+      '<div class="card"><dl class="kv">' +
+        "<div><dt>Type</dt><dd>" + esc(j.type) + "</dd></div>" +
+        '<div><dt>Domain</dt><dd class="mono">' + esc(j.domain) + "</dd></div>" +
+        "<div><dt>Status</dt><dd>" + badge(j.status) + "</dd></div>" +
+        '<div><dt>Created</dt><dd class="muted">' + esc(j.created) + "</dd></div>" +
+        '<div><dt>Finished</dt><dd class="muted">' + esc(j.finished || "—") + "</dd></div>" +
+      "</dl>" +
+      (j.status === "running" || j.status === "queued"
+        ? '<div class="muted live-hint"><span class="spinner"></span> Live — running…</div>' : "") +
+      (resultHtml ? '<h2 class="sub">Result</h2>' + resultHtml : "") +
+      '<h2 class="sub">Log</h2><pre class="log">' + esc(j.log.join("\n") || "(no output yet)") + "</pre>" +
+      cfgHtml +
+      "</div>";
+  }
+
+  function configPanel(s) {
+    var tabs = [
+      ["vhost", "Apache vhost"],
+      ["pool", "PHP-FPM pool"],
+      ["sql", "MySQL"],
+      ["manifest", "Site manifest"]
+    ];
+    var content = {
+      vhost: vhostConfig(s),
+      pool: poolConfig(s),
+      sql: sqlStatements(s),
+      manifest: manifestFile(s)
+    }[cfgTab];
+    var paths = {
+      vhost: s.vhostPath,
+      pool: s.pool,
+      sql: "(executed over the MySQL unix socket)",
+      manifest: "/etc/hostzilla/sites/" + s.domain + ".env"
+    }[cfgTab];
+
+    return '<div class="cfg-tabs" role="tablist">' +
+      tabs.map(function (t) {
+        return '<button class="cfg-tab" role="tab" data-cfgtab="' + t[0] + '" aria-selected="' +
+          (cfgTab === t[0] ? "true" : "false") + '">' + esc(t[1]) + "</button>";
+      }).join("") +
+      '<span style="flex:1"></span>' +
+      '<button class="cfg-tab" type="button" data-copy-cfg="1">Copy</button>' +
+      "</div>" +
+      '<p class="muted mono" style="font-size:12px;margin:0 0 8px">' + esc(paths) + "</p>" +
+      '<pre class="cfg-out" id="cfg-out">' + esc(content) + "</pre>";
+  }
+
+  function render() {
+    var html;
+    if (activeJobId !== null) { html = renderJobDetail(); }
+    else if (view === "sites") { html = renderSites(); }
+    else if (view === "create") { html = renderCreate(); }
+    else if (view === "jobs") { html = renderJobs(); }
+    else { html = renderDashboard(); }
+    elView.innerHTML = html;
+
+    var links = document.querySelectorAll("#demo-nav a");
+    for (var i = 0; i < links.length; i++) {
+      links[i].className = (links[i].getAttribute("data-view") === view && activeJobId === null)
+        ? "active" : "";
+    }
+  }
+
+  /* ------------------------------------------------------- job simulation
+     Step names and log lines mirror what the real runner writes. */
+  function runCreateJob(job, site) {
+    var steps = [];
+    steps.push([420, "creating " + site.domain + " type=" + site.type +
+      " ssl=" + (site.wantSsl ? 1 : 0) + " php=" + PHPVER]);
+    steps.push([620, "db ok: " + site.db + " / " + site.dbuser]);
+    steps.push([520, "pool ok: " + site.pool + " -> " + site.sock]);
+
+    if (site.type === "wordpress") {
+      steps.push([700, "wordpress: no staged core; downloading latest from wordpress.org"]);
+      steps.push([1100, "wordpress: core downloaded + extracted"]);
+    }
+    steps.push([480, "vhost written: " + site.vhostPath]);
+    steps.push([520, "php-fpm config test ok; reloaded php" + PHPVER + "-fpm"]);
+    steps.push([460, "apache configtest ok; reloaded apache2"]);
+
+    if (site.wantSsl) {
+      steps.push([900, "ssl skipped: " + site.domain + " resolves to '' not '" + DEMO_IP + "'"]);
+      site.sslState = "skipped_dns";
+    }
+    steps.push([260, "DONE " + site.domain]);
+
+    job.status = "running";
+    save(); render();
+
+    var i = 0;
+    (function next() {
+      if (i >= steps.length) {
+        job.status = "ok";
+        job.finished = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+        job.site = site;
+        job.result = {
+          status: "ok",
+          domain: site.domain,
+          type: site.type,
+          url: "http://" + site.domain + "/",
+          docroot: site.docroot,
+          db: site.db,
+          php_sock: site.sock,
+          ssl: site.sslState
+        };
+        site.ssl = site.sslState === "active";
+        state.sites.push(site);
+        save(); render();
+        return;
+      }
+      var step = steps[i++];
+      window.setTimeout(function () {
+        job.log.push(step[1]);
+        save(); render();
+        next();
+      }, step[0]);
+    })();
+  }
+
+  function newJob(type, domain) {
+    var job = {
+      id: state.nextJob++,
+      type: type,
+      domain: domain,
+      status: "queued",
+      log: [],
+      result: null,
+      site: null,
+      created: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+      finished: null
+    };
+    state.jobs.push(job);
+    return job;
+  }
+
+  function failJob(job, message) {
+    job.status = "error";
+    job.finished = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+    job.log.push("FAIL: " + message);
+    job.result = { status: "error", message: message };
+    save();
+  }
+
+  function siteExists(domain) {
+    return state.sites.some(function (s) { return s.domain === domain; });
+  }
+
+  /* ------------------------------------------------------------- handlers */
+  document.getElementById("demo-nav").addEventListener("click", function (e) {
+    var a = e.target.closest("a[data-view]");
+    if (!a) { return; }
+    e.preventDefault();
+    view = a.getAttribute("data-view");
+    activeJobId = null;
+    render();
+  });
+
+  elView.addEventListener("click", function (e) {
+    var t = e.target;
+
+    var navBtn = t.closest("[data-view]");
+    if (navBtn) {
+      e.preventDefault();
+      view = navBtn.getAttribute("data-view");
+      activeJobId = null;
+      render();
+      return;
+    }
+
+    var jobLink = t.closest("[data-job]");
+    if (jobLink) {
+      e.preventDefault();
+      activeJobId = parseInt(jobLink.getAttribute("data-job"), 10);
+      render();
+      return;
+    }
+
+    var cfgBtn = t.closest("[data-config]");
+    if (cfgBtn) {
+      e.preventDefault();
+      var domain = cfgBtn.getAttribute("data-config");
+      for (var i = state.jobs.length - 1; i >= 0; i--) {
+        if (state.jobs[i].domain === domain && state.jobs[i].status === "ok") {
+          activeJobId = state.jobs[i].id;
+          render();
+          return;
+        }
+      }
+      flash("No completed job for " + domain + " in this browser.", "error");
+      return;
+    }
+
+    var tab = t.closest("[data-cfgtab]");
+    if (tab) {
+      e.preventDefault();
+      cfgTab = tab.getAttribute("data-cfgtab");
+      render();
+      return;
+    }
+
+    if (t.closest("[data-copy-cfg]")) {
+      e.preventDefault();
+      var pre = document.getElementById("cfg-out");
+      if (pre) { copyText(pre.textContent, t.closest("[data-copy-cfg]")); }
+      return;
+    }
+
+    var del = t.closest("[data-delete]");
+    if (del) {
+      e.preventDefault();
+      var d = del.getAttribute("data-delete");
+      if (!window.confirm("Delete " + d + " and purge its database? This cannot be undone.")) { return; }
+      var job = newJob("site_delete", d);
+      job.status = "running";
+      job.log.push("deleting " + d + " (purge_db=1)");
+      save(); render();
+      window.setTimeout(function () {
+        state.sites = state.sites.filter(function (s) { return s.domain !== d; });
+        job.log.push("db purged: " + dbSlug(d));
+        job.log.push("DONE delete " + d);
+        job.status = "ok";
+        job.finished = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+        job.result = { status: "ok", domain: d, purged_db: "1" };
+        save();
+        flash("Deleted " + d + ".", "ok");
+        render();
+      }, 900);
+      return;
+    }
+  });
+
+  elView.addEventListener("submit", function (e) {
+    var form = e.target.closest("#demo-create");
+    if (!form) { return; }
+    e.preventDefault();
+
+    var domainRaw = form.elements.domain.value.trim();
+    var type = form.elements.type.value;
+    var wantSsl = form.elements.ssl.checked;
+
+    var check = validateDomain(domainRaw);
+    if (!check.ok) {
+      flash("Rejected by the runner's validation — " + check.message, "error");
+      return;
+    }
+    if (isProtected(check.domain)) {
+      flash("domain is protected: " + check.domain, "error");
+      return;
+    }
+
+    var site = buildSite(check.domain, type, wantSsl);
+    var job = newJob("site_create", check.domain);
+
+    if (siteExists(check.domain)) {
+      // The real failure path: site_create refuses to clobber an existing docroot.
+      failJob(job, "docroot already exists, refusing to clobber: " + site.docroot);
+      activeJobId = job.id;
+      flash("Creation of " + check.domain + " failed — see the job log.", "error");
+      render();
+      return;
+    }
+
+    activeJobId = job.id;
+    flash("Queued creation of " + check.domain + ".", "ok");
+    runCreateJob(job, site);
+  });
+
+  /* -------------------------------------------------------------- toolbar */
+  document.getElementById("demo-reset").addEventListener("click", function () {
+    if (!window.confirm("Clear all demo sites and jobs from this browser?")) { return; }
+    state = { sites: [], jobs: [], nextJob: 1 };
+    activeJobId = null;
+    view = "dashboard";
+    save(); render();
+    flash("Demo reset.", "ok");
+  });
+
+  document.getElementById("demo-seed").addEventListener("click", function () {
+    ["shop.example.com", "blog.example.com"].forEach(function (d, idx) {
+      if (siteExists(d)) { return; }
+      var s = buildSite(d, idx === 0 ? "php" : "wordpress", false);
+      s.ssl = idx === 0;
+      s.sslState = idx === 0 ? "active" : "none";
+      var j = newJob("site_create", d);
+      j.status = "ok";
+      j.finished = s.created;
+      j.site = s;
+      j.log = [
+        "creating " + d + " type=" + s.type + " ssl=0 php=" + PHPVER,
+        "db ok: " + s.db + " / " + s.dbuser,
+        "pool ok: " + s.pool + " -> " + s.sock,
+        "DONE " + d
+      ];
+      j.result = {
+        status: "ok", domain: d, type: s.type, url: "http://" + d + "/",
+        docroot: s.docroot, db: s.db, php_sock: s.sock, ssl: s.sslState
+      };
+      state.sites.push(s);
+    });
+    view = "sites";
+    activeJobId = null;
+    save(); render();
+    flash("Loaded sample sites.", "ok");
+  });
+
+  /* ---------------------------------------------------------------- copy */
+  function copyText(text, btn) {
+    function done() {
+      if (!btn) { return; }
+      var old = btn.textContent;
+      btn.textContent = "Copied";
+      btn.setAttribute("data-copied", "1");
+      window.setTimeout(function () {
+        btn.textContent = old;
+        btn.removeAttribute("data-copied");
+      }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+    } else { fallback(); }
+
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "absolute";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } catch (err) { /* nothing to do */ }
+      document.body.removeChild(ta);
+    }
+  }
+
+  var copyButtons = document.querySelectorAll("[data-copy]");
+  for (var ci = 0; ci < copyButtons.length; ci++) {
+    copyButtons[ci].addEventListener("click", function (e) {
+      var sel = e.currentTarget.getAttribute("data-copy");
+      var node = document.querySelector(sel);
+      if (node) { copyText(node.textContent, e.currentTarget); }
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
