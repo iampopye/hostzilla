@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Sites{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Sites</h1>
+  <a href="{{ url_for('site_create') }}" class="btn btn-primary">+ New site</a>
+</div>
+
+{% if error %}
+  <div class="flash flash-error">Could not list sites: {{ error }}</div>
+{% endif %}
+
+<div class="card">
+  {% if sites %}
+  <table class="table">
+    <thead>
+      <tr><th>Domain</th><th>Type</th><th>Doc root</th><th>SSL</th><th>Created</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for site in sites %}
+      <tr>
+        <td>
+          {% set scheme = 'https' if site.ssl else 'http' %}
+          <a class="link" href="{{ scheme }}://{{ site.domain }}" target="_blank" rel="noopener">{{ site.domain }}</a>
+        </td>
+        <td><span class="badge badge-type">{{ site.type }}</span></td>
+        <td class="mono muted">{{ site.docroot }}</td>
+        <td>
+          {% if site.ssl %}
+            <span class="badge badge-ok">active</span>
+          {% else %}
+            <span class="badge badge-muted">none</span>
+          {% endif %}
+        </td>
+        <td class="muted">{{ site.created }}</td>
+        <td class="right">
+          <form method="post"
+                action="{{ url_for('site_delete', domain=site.domain) }}"
+                onsubmit="return confirm('Delete {{ site.domain }} and purge its database? This cannot be undone.');">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    {% if not error %}
+    <p class="muted empty">No sites yet. Click “New site” to provision one.</p>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

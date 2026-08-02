@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ brand }}{% endblock %} · {{ brand }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='hostzilla.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<header class="topnav">
+  <div class="nav-inner">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <span class="rex">🦖</span>
+      <span class="brand-text">{{ brand }}</span>
+    </a>
+    <nav class="nav-links">
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('sites') }}" class="{{ 'active' if request.endpoint == 'sites' }}">Sites</a>
+      <a href="{{ url_for('site_create') }}" class="{{ 'active' if request.endpoint == 'site_create' }}">Create</a>
+      <a href="{{ url_for('jobs_list') }}" class="{{ 'active' if request.endpoint in ['jobs_list','job_detail'] }}">Jobs</a>
+    </nav>
+    <form class="logout-form" method="post" action="{{ url_for('logout') }}">
+      <span class="user-chip">{{ current_user.username }}</span>
+      <button type="submit" class="btn btn-ghost">Logout</button>
+    </form>
+  </div>
+</header>
+{% endif %}
+
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <span>{{ brand }} 🦖 — {{ tagline }}</span>
+</footer>
+
+<script src="{{ url_for('static', filename='hostzilla.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

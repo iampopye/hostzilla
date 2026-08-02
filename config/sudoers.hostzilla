@@ -1,0 +1,13 @@
+# Hostzilla — privilege boundary between the unprivileged panel and root.
+# Installed to /etc/sudoers.d/hostzilla (validate with `visudo -cf` before placing).
+#
+# The "hostzilla" service user may run ONLY the three provisioning verbs below,
+# NOPASSWD, and nothing else. These scripts are root-owned and mode 0750; they
+# self-validate every argument. Do NOT add a blanket entry or a shell here.
+
+# Allow the verbs to run without a tty (the panel invokes them via subprocess).
+Defaults!/opt/hostzilla/runner/site_create.sh !requiretty
+Defaults!/opt/hostzilla/runner/site_delete.sh !requiretty
+Defaults!/opt/hostzilla/runner/site_list.sh   !requiretty
+
+hostzilla ALL=(root) NOPASSWD: /opt/hostzilla/runner/site_create.sh *, /opt/hostzilla/runner/site_delete.sh *, /opt/hostzilla/runner/site_list.sh *

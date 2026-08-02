@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Dashboard</h1>
+  <a href="{{ url_for('site_create') }}" class="btn btn-primary">+ New site</a>
+</div>
+
+<div class="stat-grid">
+  <div class="card stat">
+    <span class="stat-label">Sites</span>
+    {% if site_count is not none %}
+      <span class="stat-value">{{ site_count }}</span>
+    {% else %}
+      <span class="stat-value muted">—</span>
+    {% endif %}
+    {% if site_error %}<span class="stat-sub error-text">{{ site_error }}</span>{% endif %}
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Jobs (total)</span>
+    <span class="stat-value">{{ counts.total }}</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Running / Queued</span>
+    <span class="stat-value">{{ counts.running }} / {{ counts.queued }}</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-label">Completed / Failed</span>
+    <span class="stat-value">{{ counts.ok }} / <span class="error-text">{{ counts.error }}</span></span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Recent jobs</h2>
+    <a href="{{ url_for('jobs_list') }}" class="link">View all</a>
+  </div>
+  {% if recent %}
+  <table class="table">
+    <thead>
+      <tr><th>#</th><th>Type</th><th>Domain</th><th>Status</th><th>Created</th></tr>
+    </thead>
+    <tbody>
+      {% for job in recent %}
+      <tr>
+        <td><a class="link" href="{{ url_for('job_detail', job_id=job.id) }}">{{ job.id }}</a></td>
+        <td>{{ job.type }}</td>
+        <td>{{ job.domain }}</td>
+        <td><span class="badge badge-{{ job.status }}">{{ job.status }}</span></td>
+        <td class="muted">{{ job.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted empty">No jobs yet. Create your first site to get started.</p>
+  {% endif %}
+</div>
+{% endblock %}

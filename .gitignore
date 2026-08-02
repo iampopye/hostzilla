@@ -1,0 +1,27 @@
+# Hostzilla repo — ignore everything at top level by default, then track only
+# the product. Keeps the legacy Pulse app, venv, CyberPanel reference clone,
+# databases, backups, logs, and secrets OUT of the repo.
+/*
+
+# --- track the product ---
+!.gitignore
+!README.md
+!LICENSE
+!VERSION
+!install.sh
+!panel/
+!runner/
+!config/
+!docs/
+
+# scratch / never-commit inside tracked dirs
+panel/venv/
+panel/data/
+**/__pycache__/
+*.pyc
+*.db
+*.sqlite*
+.secret_key
+.env
+*.pem
+*.key

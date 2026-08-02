@@ -1,0 +1,37 @@
+# Hostzilla configuration — /etc/hostzilla/hostzilla.conf
+#
+# This file is BOTH sourced by bash (the privileged runner) AND read by the
+# Python panel, so keep it to simple KEY="value" lines: no shell expansion,
+# no command substitution, no spaces around '='. Comments start with '#'.
+#
+# The installer writes a real copy of this to /etc/hostzilla/hostzilla.conf.
+# Edit that file, then: systemctl reload hostzilla   (panel) — the runner picks
+# up changes on its next invocation automatically.
+
+# Optional public hostname for the panel itself. When set, it is treated as a
+# PROTECTED domain (the runner will refuse to create/delete it) and is the name
+# you pass to certbot to put the panel on HTTPS. Leave empty to run on the IP.
+PANEL_DOMAIN=""
+
+# Email used for Let's Encrypt / certbot registration (expiry + recovery notices).
+# Used for BOTH the panel's own cert and every site cert the runner issues.
+ADMIN_EMAIL="admin@example.com"
+
+# Extra domains the runner must NEVER touch, space-separated. The runner already
+# protects '', 'localhost', 'html', and $PANEL_DOMAIN — list any pre-existing
+# sites on this box here so a mistaken create/delete can never clobber them.
+#   e.g. PROTECTED_DOMAINS="legacy.example.com mail.example.com"
+PROTECTED_DOMAINS=""
+
+# Absolute path to the panel's SQLite database.
+DB_PATH="/var/lib/hostzilla/hostzilla.db"
+
+# Port gunicorn binds on loopback; Apache reverse-proxies to it. Match the
+# systemd unit + the apache vhost if you change this.
+PANEL_PORT="2087"
+
+# Flask session-signing secret. The installer generates a random value here so
+# all gunicorn workers share ONE key (otherwise each worker signs cookies with a
+# different key and logins break). Keep it secret; the installer writes this file
+# root:hostzilla mode 0640. Regenerate to invalidate all existing sessions.
+HZ_SECRET_KEY=""

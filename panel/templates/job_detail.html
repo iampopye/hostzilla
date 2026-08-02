@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Job #{{ job.id }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Job #{{ job.id }}</h1>
+  <a href="{{ url_for('jobs_list') }}" class="btn btn-ghost">Back to jobs</a>
+</div>
+
+<div class="card"
+     id="job-panel"
+     data-job-id="{{ job.id }}"
+     data-status-url="{{ url_for('job_status', job_id=job.id) }}"
+     data-status="{{ job.status }}">
+  <dl class="kv">
+    <div><dt>Type</dt><dd>{{ job.type }}</dd></div>
+    <div><dt>Domain</dt><dd class="mono">{{ job.domain }}</dd></div>
+    <div><dt>Status</dt><dd><span class="badge badge-{{ job.status }}" id="job-status-badge">{{ job.status }}</span></dd></div>
+    <div><dt>Created</dt><dd class="muted">{{ job.created_at }}</dd></div>
+    <div><dt>Finished</dt><dd class="muted" id="job-finished">{{ job.finished_at or '—' }}</dd></div>
+  </dl>
+
+  <div id="job-live-hint" class="muted live-hint {{ 'hidden' if job.status in ['ok','error'] }}">
+    <span class="spinner"></span> Live — polling for updates…
+  </div>
+
+  {% if result %}
+  <h2 class="sub">Result</h2>
+  <div id="job-result">
+    {% if result.url %}
+      <p><strong>URL:</strong> <a class="link" href="{{ result.url }}" target="_blank" rel="noopener">{{ result.url }}</a></p>
+    {% endif %}
+    {% if result.docroot %}<p><strong>Doc root:</strong> <span class="mono">{{ result.docroot }}</span></p>{% endif %}
+    {% if result.db %}<p><strong>Database:</strong> <span class="mono">{{ result.db }}</span></p>{% endif %}
+    {% if result.php_sock %}<p><strong>PHP socket:</strong> <span class="mono">{{ result.php_sock }}</span></p>{% endif %}
+    {% if result.ssl %}<p><strong>SSL:</strong> {{ result.ssl }}</p>{% endif %}
+    {% if result.message %}<p class="error-text"><strong>Message:</strong> {{ result.message }}</p>{% endif %}
+  </div>
+  {% else %}
+  <div id="job-result"></div>
+  {% endif %}
+
+  <h2 class="sub">Log</h2>
+  <pre class="log" id="job-log">{{ job.log or '(no output yet)' }}</pre>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.HZ_pollJob && window.HZ_pollJob();
+</script>
+{% endblock %}

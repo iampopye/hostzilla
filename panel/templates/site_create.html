@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Create site{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Create a site</h1>
+</div>
+
+<div class="card form-card">
+  <form method="post" action="{{ url_for('site_create') }}" class="stack">
+    <label>
+      <span>Domain</span>
+      <input type="text" name="domain" placeholder="example.com"
+             value="{{ form.domain }}"
+             pattern="^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))+$"
+             autocomplete="off" autocapitalize="off" spellcheck="false" required>
+      <small class="muted">Fully-qualified domain that points at this server.</small>
+    </label>
+
+    <label>
+      <span>Type</span>
+      <select name="type">
+        <option value="static"    {{ 'selected' if form.type == 'static' }}>Static HTML</option>
+        <option value="php"       {{ 'selected' if form.type == 'php' }}>PHP</option>
+        <option value="wordpress" {{ 'selected' if form.type == 'wordpress' }}>WordPress</option>
+      </select>
+    </label>
+
+    <label class="check">
+      <input type="checkbox" name="ssl" value="on" {{ 'checked' if form.ssl }}>
+      <span>Request a Let's Encrypt certificate (requires DNS to resolve here)</span>
+    </label>
+
+    <div class="form-actions">
+      <a href="{{ url_for('sites') }}" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary">Provision site</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
