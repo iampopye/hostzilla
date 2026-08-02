@@ -1,0 +1,15 @@
+Hostzilla
+Copyright (c) 2026 Karan Garg
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. See the LICENSE file for the full text.
+
+Hostzilla is also available under a separate commercial licence for those who
+do not wish to comply with the AGPL. See COMMERCIAL.md.
+
+Hostzilla provisions and configures third-party software on the servers it
+manages — Apache HTTP Server, PHP-FPM, MySQL, Certbot and WordPress among them.
+Those projects are not distributed as part of Hostzilla and remain under their
+own licences and copyrights.
