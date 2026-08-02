@@ -1,0 +1,117 @@
+name: Bug report
+description: Something in Hostzilla does not work the way it should.
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Found a security vulnerability?** Please do *not* file it here.
+        Email <kgupta0183@gmail.com> instead — see [SECURITY.md](https://github.com/iampopye/hostzilla/blob/main/SECURITY.md).
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched existing issues and this has not already been reported.
+          required: true
+        - label: This is not a security vulnerability (those go to kgupta0183@gmail.com).
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+      placeholder: |
+        I clicked Create Site for example.com with type "php" and SSL enabled.
+        The job went to "failed" with no visible reason. I expected the site to
+        be created.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The smallest sequence that produces the problem.
+      placeholder: |
+        1. Fresh Ubuntu 24.04 VPS
+        2. sudo bash install.sh
+        3. Log in, Create Site → domain example.com, type php, SSL ticked
+        4. Watch the job detail page
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of Hostzilla?
+      description: Best guess is fine.
+      options:
+        - Installer (install.sh)
+        - Panel / web dashboard
+        - Site creation
+        - Site deletion
+        - SSL / Let's Encrypt
+        - Job queue or logs
+        - Login / accounts
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Hostzilla version
+      description: Output of `cat /opt/hostzilla/VERSION`, or the commit SHA you installed from.
+      placeholder: "0.1.0-dev (commit 8ed12bc)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ubuntu
+    attributes:
+      label: Ubuntu version
+      options:
+        - "24.04 LTS"
+        - "22.04 LTS"
+        - Other (please say which in the environment box)
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Anything that might matter — VPS provider, whether the box was fresh,
+        whether Apache/MySQL/PHP were already installed, Python version
+        (`python3 --version`).
+      placeholder: |
+        Hetzner CX22, fresh 24.04 image, nothing else installed.
+        Python 3.12.3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        From `/var/log/hostzilla/` (the runner log is the useful one for
+        provisioning failures), plus `journalctl -u hostzilla -n 100` for panel
+        problems. This is automatically formatted as code — no backticks needed.
+
+        **Please redact real domains, IPs, passwords and database credentials.**
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, a theory about the cause, a workaround you found.

@@ -1,0 +1,90 @@
+name: Feature request
+description: Suggest something Hostzilla should be able to do.
+title: "[Feature]: "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests start with a problem, not a solution. Tell us what
+        you were trying to do and what got in the way — the best design often
+        turns out to be something neither of us had thought of.
+
+        For open-ended ideas and "would you ever consider…" questions,
+        [Discussions](https://github.com/iampopye/hostzilla/discussions) is a
+        better fit than an issue.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched existing issues and the [roadmap](https://github.com/iampopye/hostzilla/blob/main/docs/ROADMAP.md), and this is not already planned or requested.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation you hit, not the feature you want yet.
+      placeholder: |
+        I host sites for clients and need to hand each of them access to only
+        their own site. Right now the panel has a single operator account, so I
+        end up doing everything myself.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like Hostzilla to do?
+      description: Your proposed solution, if you have one.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of Hostzilla would this touch?
+      options:
+        - Panel / web dashboard
+        - Site provisioning (the runner verbs)
+        - Installer
+        - SSL / certificates
+        - Users, roles and permissions
+        - Backups
+        - DNS or email
+        - Site builder
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What are you doing instead today?
+      description: |
+        Workarounds, manual steps, or another tool you use for this. This is
+        genuinely useful — it tells us how much the gap actually costs.
+
+  - type: checkboxes
+    id: privilege
+    attributes:
+      label: Privileged surface
+      description: |
+        The panel can only ask root for three validated operations. Anything
+        needing a fourth is a design change and needs discussion before code —
+        see the runner contract in
+        [CONTRIBUTING.md](https://github.com/iampopye/hostzilla/blob/main/CONTRIBUTING.md).
+      options:
+        - label: As far as I can tell, this would need a new privileged operation on the server.
+        - label: I don't know whether it would.
+
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to help build it?
+      options:
+        - label: I'd be interested in opening a pull request for this.
+        - label: I'd be happy to test it on my own server.
