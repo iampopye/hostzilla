@@ -61,12 +61,20 @@ def client(app):
 
 
 @pytest.fixture()
-def admin_password(db_path):
-    """Create a known admin account and return its password."""
+def admin_password(app):
+    """Give the admin account a known password and return it.
+
+    create_app() calls bootstrap_admin(), which mints an admin with a RANDOM
+    password, so this has to overwrite it rather than assume the account is
+    absent.
+    """
     import models
 
     password = "correct-horse-battery-staple"
-    if not models.get_user_by_username("admin"):
+    user = models.get_user_by_username("admin")
+    if user:
+        models.set_password(user["id"], password)
+    else:
         models.create_user("admin", password, role="admin")
     return password
 
