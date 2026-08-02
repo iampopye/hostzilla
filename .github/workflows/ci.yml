@@ -71,6 +71,21 @@ jobs:
         # -x follows `source` directives so _lib.sh is analysed in context.
         run: shellcheck -x -S warning runner/*.sh install.sh
 
+  landing-page:
+    name: Landing page
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: docs/index.html is up to date with its source and the panel CSS
+        run: python tools/build_landing_page.py --check
+      - name: Assert zero external subresources
+        run: python tests/check_landing_page.py
+
   sudoers:
     name: Validate sudoers allowlist
     runs-on: ubuntu-latest
