@@ -116,7 +116,11 @@ class TestValidateDomain:
             "example.com#frag",
             "exa\\mple.com",
             "example.com\nrm -rf /",
-            "example.com\x00evil",
+            # A NUL byte is deliberately absent here: argv and the environment
+            # are NUL-terminated C strings, so execve cannot carry one into the
+            # verb in the first place. The panel-side equivalent is covered by
+            # tests/test_runner_client.py, which is the layer where a NUL can
+            # actually appear in a request.
         ],
     )
     def test_rejects_hostile_input(self, domain, test_root):
