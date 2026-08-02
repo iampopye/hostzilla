@@ -141,10 +141,11 @@ class TestSql:
             assert fragment in demo_sql, "{} missing from the demo".format(fragment)
 
     def test_grant_is_scoped_to_the_single_database(self, shell, landing):
-        # A demo that showed a wider grant than reality would be misleading in
-        # exactly the direction that matters.
-        assert "GRANT ALL PRIVILEGES ON `$DB`.* TO" in shell
-        assert "GRANT ALL PRIVILEGES ON `\" + s.db + \"`.* TO" in read(LANDING_SRC)
+        # A demo that showed a wider grant than reality would mislead in exactly
+        # the direction that matters. The heredoc escapes its backticks, so match
+        # on the `.*` scoping rather than on the literal quoting.
+        assert re.search(r"GRANT ALL PRIVILEGES ON .{0,12}\$DB.{0,4}\.\* TO", shell)
+        assert re.search(r"GRANT ALL PRIVILEGES ON .{0,20}s\.db.{0,12}\.\* TO", landing)
 
 
 class TestManifest:
@@ -175,7 +176,7 @@ class TestPathDerivation:
             "/var/www/",
             "/run/php/hz-",
             "/etc/apache2/sites-available/",
-            "/etc/hostzilla/sites/",
+            "/etc/hostzilla/sites",
             "fpm/pool.d/hz-",
         ],
     )

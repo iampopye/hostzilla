@@ -28,6 +28,7 @@
 !docs/
 !tests/
 !pyproject.toml
+!tools/
 
 # scratch / never-commit inside tracked dirs
 panel/venv/
