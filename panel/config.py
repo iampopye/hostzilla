@@ -17,6 +17,11 @@ _DEFAULTS = {
     "PROTECTED_DOMAINS": "",
     "DB_PATH": "",
     "PANEL_PORT": "2087",
+    # Read from the conf file as well as the environment. systemd passes it via
+    # EnvironmentFile, but the panel must also work when started by hand, and a
+    # panel that cannot find this key cannot sign session cookies at all.
+    # Server-side only: never expose it to a template or an API response.
+    "HZ_SECRET_KEY": "",
 }
 
 _KV_RE = re.compile(r'^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$')
@@ -43,7 +48,7 @@ def _strip_value(raw):
 def _parse_conf_file(path):
     values = {}
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             for line in fh:
                 line = line.rstrip("\n")
                 if not line.strip() or line.lstrip().startswith("#"):

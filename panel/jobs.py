@@ -7,6 +7,7 @@ de-duplicated.
 """
 
 import json
+import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -91,9 +92,20 @@ def submit_job(job_type, domain, params=None):
         if existing:
             return existing["id"], True
 
-        job_id = models.create_job(
-            job_type, domain, params_json=json.dumps(params), status="queued"
-        )
+        try:
+            job_id = models.create_job(
+                job_type, domain, params_json=json.dumps(params), status="queued"
+            )
+        except sqlite3.IntegrityError:
+            # The partial unique index on (type, domain) for active jobs is the
+            # real dedup guarantee. _dedup_lock is per-process, and gunicorn runs
+            # several worker processes, so two concurrent requests can both pass
+            # the find_active_job() check above. Losing that race is not an
+            # error: the other worker has already queued exactly this job.
+            existing = models.find_active_job(job_type, domain)
+            if existing:
+                return existing["id"], True
+            raise
 
     _executor.submit(_run_job, job_id, job_type, domain, params)
     return job_id, False

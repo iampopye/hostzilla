@@ -67,7 +67,7 @@ def _parse_last_json(stdout):
     try:
         obj = json.loads(last)
     except json.JSONDecodeError as exc:
-        raise RunnerError("runner output not JSON: {}".format(exc))
+        raise RunnerError("runner output not JSON: {}".format(exc)) from exc
     if not isinstance(obj, dict):
         raise RunnerError("runner JSON was not an object")
     return obj
@@ -93,9 +93,9 @@ def _run(verb, args, timeout=900):
             check=False,
         )
     except FileNotFoundError as exc:
-        raise RunnerError("runner not found: {}".format(exc))
-    except subprocess.TimeoutExpired:
-        raise RunnerError("runner timed out after {}s".format(timeout))
+        raise RunnerError("runner not found: {}".format(exc)) from exc
+    except subprocess.TimeoutExpired as exc:
+        raise RunnerError("runner timed out after {}s".format(timeout)) from exc
 
     log = proc.stdout or ""
     try:
@@ -104,7 +104,7 @@ def _run(verb, args, timeout=900):
         if proc.returncode != 0:
             raise RunnerError(
                 "runner exited {} with no JSON result".format(proc.returncode)
-            )
+            ) from None
         raise
     return result, log
 

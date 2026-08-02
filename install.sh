@@ -67,7 +67,7 @@ PKGS=(
   apache2 php-fpm php-mysql mysql-server
   certbot python3-certbot-apache
   python3-venv python3-pip
-  curl unzip openssl
+  curl unzip openssl rsync
 )
 apt-get install -y "${PKGS[@]}" >>"$INSTALL_LOG" 2>&1 \
   || fail "package install failed (see $INSTALL_LOG)"
@@ -111,7 +111,7 @@ cp -a "$SRC_DIR/runner/." "$HZ_RUNNER/"
 chown -R root:root "$HZ_RUNNER"
 chmod 0750 "$HZ_RUNNER"
 chmod 0750 "$HZ_RUNNER"/*.sh
-ok "runner verbs: $(ls "$HZ_RUNNER"/*.sh | xargs -n1 basename | tr '\n' ' ')"
+ok "runner verbs: $(find "$HZ_RUNNER" -maxdepth 1 -name '*.sh' -printf '%f ')"
 
 # ---- 6. python venv + deps --------------------------------------------------
 step "Building Python virtualenv + installing requirements"
@@ -143,6 +143,18 @@ if [[ -f "$HZ_CONF" ]]; then
   source "$HZ_CONF"
   ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"
   PANEL_DOMAIN="${PANEL_DOMAIN:-}"
+  # Upgrade path: configs written before the session key existed (or edited to
+  # blank it) leave every gunicorn worker signing cookies with its own random
+  # key, which breaks login in a way that looks intermittent. Add one in place
+  # rather than silently shipping a broken panel.
+  if [[ -z "${HZ_SECRET_KEY:-}" ]]; then
+    warn "config has no HZ_SECRET_KEY — generating one (existing sessions will end)"
+    printf '\n# Flask session signing key (added by installer). Keep secret.\nHZ_SECRET_KEY="%s"\n' \
+      "$(openssl rand -hex 32)" >> "$HZ_CONF"
+    chgrp "$HZ_USER" "$HZ_CONF" 2>/dev/null || true
+    chmod 0640 "$HZ_CONF"
+    ok "added HZ_SECRET_KEY to $HZ_CONF"
+  fi
 else
   # ADMIN_EMAIL: env override > interactive prompt (if a tty) > default
   ADMIN_EMAIL="${ADMIN_EMAIL:-}"
@@ -200,7 +212,7 @@ systemctl enable --now mysql >>"$INSTALL_LOG" 2>&1 \
   || systemctl enable --now mysql.service >>"$INSTALL_LOG" 2>&1 \
   || fail "could not start mysql"
 # Wait for the socket to accept connections.
-for i in $(seq 1 30); do
+for _ in $(seq 1 30); do
   if mysqladmin --protocol=socket ping >/dev/null 2>&1; then break; fi
   sleep 1
 done
@@ -221,118 +233,73 @@ fi
 
 # ---- 10. panel DB init + admin user with RANDOM password --------------------
 step "Initializing panel database + admin user"
-export HOSTZILLA_DB_PATH="$HZ_DB" DB_PATH="$HZ_DB"
-ADMIN_USER=admin
-ADMIN_PASS="$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-24)"
+export DB_PATH="$HZ_DB"
+ADMIN_USER="admin"
 ADMIN_PASS_FILE="$HZ_ETC/admin_password"     # written only on first creation
 
 PY="$HZ_PANEL/venv/bin/python"
 BOOT_OUT="$(mktemp)"
-# Bootstrap contract (panel agent owns the panel; we try, in order):
-#   1) panel's own bootstrap:  python -m hostzilla_bootstrap / bootstrap.py
-#   2) panel's init_db.py + models/auth interface
-#   3) generic models.init_dbs() + auth.hash_password() + models.create_user()
-# All run with CWD=$HZ_PANEL so the app's relative imports + data/ resolve.
+
+# The panel is first-party code in this repo, so call its real interface
+# directly. (This step previously introspected models.create_user() with the
+# inspect module and tried three speculative entrypoints, which meant a genuine
+# failure was indistinguishable from "the panel exposes a different API".)
+#
+# The generated password is passed through the ENVIRONMENT, never argv: command
+# lines are world-readable via /proc, so an argv password leaks to every local
+# user for as long as the process runs.
 set +e
 (
   cd "$HZ_PANEL" || exit 90
-  "$PY" - "$ADMIN_USER" "$ADMIN_EMAIL" "$ADMIN_PASS" <<'PYEOF'
-import os, sys, importlib
-admin_user, admin_email, admin_pass = sys.argv[1], sys.argv[2], sys.argv[3]
+  HZ_ADMIN_USER="$ADMIN_USER" "$PY" - <<'PYEOF'
+import os, sys
 sys.path.insert(0, os.getcwd())
+import models
 
-def try_init():
-    # Prefer an explicit panel bootstrap entrypoint if the panel ships one.
-    for modname, fn in (("bootstrap","main"), ("hostzilla_bootstrap","main")):
-        try:
-            m = importlib.import_module(modname)
-            if hasattr(m, fn):
-                getattr(m, fn)()
-                return f"bootstrap:{modname}.{fn}"
-        except Exception:
-            pass
-    # Otherwise initialize the DB via models.
-    import models
-    for fn in ("init_db", "init_dbs", "create_all"):
-        if hasattr(models, fn):
-            getattr(models, fn)()
-            return f"models.{fn}"
-    raise RuntimeError("no DB init entrypoint found in panel (bootstrap/models.init_db*)")
+models.init_db()
+admin_user = os.environ["HZ_ADMIN_USER"]
 
-def ensure_admin():
-    import models
-    getu = getattr(models, "get_user_by_username", None)
-    if getu and getu(admin_user):
-        return "exists"
-    if not hasattr(models, "create_user"):
-        raise RuntimeError("models has no create_user()")
-    import inspect
-    params = set(inspect.signature(models.create_user).parameters)
-    # The panel's create_user may take a plaintext password (it hashes
-    # internally) and/or accept email/password_hash. Adapt to whatever it offers.
-    if "password" in params:
-        # plaintext-password interface (models hashes it for us)
-        kwargs = {"username": admin_user, "password": admin_pass}
-        if "email" in params:
-            kwargs["email"] = admin_email
-        if "role" in params:
-            kwargs["role"] = "admin"
-        models.create_user(**kwargs)
-        return "created"
-    if "password_hash" in params:
-        # pre-hashed interface: find a hasher from auth or werkzeug
-        hp = None
-        try:
-            import auth as _auth
-            for fn in ("hash_password", "generate_password_hash"):
-                if hasattr(_auth, fn):
-                    hp = getattr(_auth, fn); break
-        except Exception:
-            pass
-        if hp is None:
-            from werkzeug.security import generate_password_hash as hp
-        kwargs = {"username": admin_user, "password_hash": hp(admin_pass)}
-        if "email" in params:
-            kwargs["email"] = admin_email
-        if "role" in params:
-            kwargs["role"] = "admin"
-        models.create_user(**kwargs)
-        return "created"
-    raise RuntimeError("create_user signature unrecognized: %r" % (sorted(params),))
-
-how = try_init()
-state = "skipped-admin"
-try:
-    state = ensure_admin()
-except Exception as e:
-    print(f"ADMIN_ERR {e}", file=sys.stderr)
-print(f"INIT_OK {how} {state}")
+if models.get_user_by_username(admin_user):
+    print("INIT_OK exists")
+else:
+    # bootstrap_admin() generates the random password itself and refuses to
+    # create a well-known default.
+    created = models.bootstrap_admin(admin_user)
+    if created is None:
+        print("INIT_OK exists")
+    else:
+        _username, password = created
+        print("INIT_OK created")
+        print("ADMIN_PASS " + password)
 PYEOF
 ) >"$BOOT_OUT" 2>&1
 RC=$?
 set -e
-cat "$BOOT_OUT" >> "$INSTALL_LOG"
+
+# Keep the password out of the install log; log everything else.
+grep -v '^ADMIN_PASS ' "$BOOT_OUT" >> "$INSTALL_LOG" || true
 
 if [[ $RC -ne 0 ]]; then
-  warn "panel DB bootstrap returned non-zero (rc=$RC). Detail:"
-  sed 's/^/    /' "$BOOT_OUT" | tail -20
-  warn "The panel may expose a different init entrypoint; verify with the panel author."
+  warn "panel DB bootstrap failed (rc=$RC). Detail:"
+  grep -v '^ADMIN_PASS ' "$BOOT_OUT" | sed 's/^/    /' | tail -20
 fi
 
-if grep -q 'INIT_OK .* created' "$BOOT_OUT"; then
+ADMIN_PASS=""
+if grep -q '^INIT_OK created' "$BOOT_OUT"; then
+  ADMIN_PASS="$(sed -n 's/^ADMIN_PASS //p' "$BOOT_OUT" | head -1)"
   umask 077
   printf '%s\n' "$ADMIN_PASS" > "$ADMIN_PASS_FILE"
   chmod 0600 "$ADMIN_PASS_FILE"
   ADMIN_CREATED=1
   ok "panel DB initialized; admin '$ADMIN_USER' created (password saved to $ADMIN_PASS_FILE)"
-elif grep -q 'INIT_OK .* exists' "$BOOT_OUT"; then
+elif grep -q '^INIT_OK exists' "$BOOT_OUT"; then
   ADMIN_CREATED=0
   ok "panel DB initialized; admin '$ADMIN_USER' already existed (password unchanged)"
 else
   ADMIN_CREATED=-1
   warn "could not confirm admin creation — check $INSTALL_LOG"
 fi
-rm -f "$BOOT_OUT"
+shred -u "$BOOT_OUT" 2>/dev/null || rm -f "$BOOT_OUT"
 
 # ---- 11. ownership ----------------------------------------------------------
 step "Setting ownership (panel + state -> $HZ_USER)"

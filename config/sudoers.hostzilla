@@ -4,10 +4,26 @@
 # The "hostzilla" service user may run ONLY the three provisioning verbs below,
 # NOPASSWD, and nothing else. These scripts are root-owned and mode 0750; they
 # self-validate every argument. Do NOT add a blanket entry or a shell here.
+#
+# Reset the environment on every escalation. sudo does this by default, but
+# stating it here means the verbs keep their guarantees even if a future
+# /etc/sudoers relaxes the global default: the runner reads HZ_* variables, and
+# an inherited HZ_TEST_ROOT would otherwise redirect where root writes.
+Defaults:hostzilla env_reset
 
 # Allow the verbs to run without a tty (the panel invokes them via subprocess).
 Defaults!/opt/hostzilla/runner/site_create.sh !requiretty
 Defaults!/opt/hostzilla/runner/site_delete.sh !requiretty
 Defaults!/opt/hostzilla/runner/site_list.sh   !requiretty
 
-hostzilla ALL=(root) NOPASSWD: /opt/hostzilla/runner/site_create.sh *, /opt/hostzilla/runner/site_delete.sh *, /opt/hostzilla/runner/site_list.sh *
+# NOTE ON THE TRAILING WILDCARD
+# In sudoers, "cmd *" requires at least one argument — it does NOT match a bare
+# "cmd" with an empty argument list. site_list takes no arguments, so the panel's
+# `sudo .../site_list.sh` was refused by sudo and the Sites page and dashboard
+# site count failed on every real install. site_list is therefore listed with no
+# argument spec at all, which both fixes the call and forbids passing it any
+# arguments. site_create and site_delete legitimately take arguments; each script
+# re-validates every one of them before use.
+hostzilla ALL=(root) NOPASSWD: /opt/hostzilla/runner/site_create.sh *, \
+                               /opt/hostzilla/runner/site_delete.sh *, \
+                               /opt/hostzilla/runner/site_list.sh
