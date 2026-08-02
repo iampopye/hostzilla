@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions, ideas and help
+    url: https://github.com/iampopye/hostzilla/discussions
+    about: Not sure it's a bug? Ask in Discussions — installation help, "how do I…", and open-ended ideas all belong there.
+  - name: Report a security vulnerability
+    url: https://github.com/iampopye/hostzilla/blob/main/SECURITY.md
+    about: Please do not open a public issue. Email kgupta0183@gmail.com — the policy explains what is in scope and what to expect.
+  - name: Commercial licence enquiry
+    url: https://github.com/iampopye/hostzilla/blob/main/COMMERCIAL.md
+    about: If the AGPL's source-sharing obligation does not work for your organisation, start here.
